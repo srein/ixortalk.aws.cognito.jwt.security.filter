@@ -24,7 +24,7 @@
 package com.ixortalk.aws.cognito.boot.filter;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.ixortalk.aws.cognito.boot.config.JwtAutoConfiguration;
+import com.ixortalk.aws.cognito.boot.config.AwsCognitoAutoConfiguration;
 import com.ixortalk.aws.cognito.boot.config.JwtIdTokenCredentialsHolder;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -48,6 +48,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
@@ -60,7 +61,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = JwtAutoConfiguration.class,initializers = ConfigFileApplicationContextInitializer.class)
+@ContextConfiguration(classes = {AwsCognitoAutoConfiguration.class,JwtIdTokenCredentialsHolder.class},initializers = ConfigFileApplicationContextInitializer.class)
+@TestPropertySource(locations="classpath:header-no-bearer.properties")
 public class AwsCognitoIdTokenProcessorTest {
 
     private static final String KNOWN_KID = "1486832567";
@@ -72,9 +74,6 @@ public class AwsCognitoIdTokenProcessorTest {
 
     @Autowired
     private AwsCognitoIdTokenProcessor awsCognitoIdTokenProcessor;
-
-    @Autowired
-    private JwtIdTokenCredentialsHolder jwtIdTokenCredentialsHolder;
 
     private MockHttpServletRequest request = new MockHttpServletRequest();
 

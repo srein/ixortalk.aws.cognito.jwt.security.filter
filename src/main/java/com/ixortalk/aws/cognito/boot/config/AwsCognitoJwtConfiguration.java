@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationProperties(prefix = "com.ixortalk.security.jwt.aws")
-public class JwtConfiguration {
+public class AwsCognitoJwtConfiguration {
 
     private static final String COGNITO_IDENTITY_POOL_URL = "https://cognito-idp.%s.amazonaws.com/%s";
     private static final String JSON_WEB_TOKEN_SET_URL_SUFFIX = "/.well-known/jwks.json";
@@ -72,7 +72,7 @@ public class JwtConfiguration {
         return identityPoolId;
     }
 
-    public JwtConfiguration setIdentityPoolId(String identityPoolId) {
+    public AwsCognitoJwtConfiguration setIdentityPoolId(String identityPoolId) {
         this.identityPoolId = identityPoolId;
         return this;
     }

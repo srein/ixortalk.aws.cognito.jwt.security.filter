@@ -23,11 +23,16 @@
  */
 package com.ixortalk.aws.cognito.boot.config;
 
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
+
 /**
  *
  * Request scoped bean that holds the IDToken associated with the user.
  *
  */
+@RequestScope
+@Component
 public class JwtIdTokenCredentialsHolder {
 
     public String getIdToken() {

@@ -43,6 +43,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,7 +52,7 @@ import static com.nimbusds.jose.JWSAlgorithm.RS256;
 
 @Configuration
 @ConditionalOnClass({AwsCognitoJwtAuthenticationFilter.class, AwsCognitoIdTokenProcessor.class})
-@EnableConfigurationProperties({AwsCognitoJtwConfiguration.class})
+@EnableConfigurationProperties({AwsCognitoJwtConfiguration.class})
 public class AwsCognitoAutoConfiguration {
 
     private static final Log logger = LogFactory.getLog(AwsCognitoAutoConfiguration.class);
@@ -75,11 +76,11 @@ public class AwsCognitoAutoConfiguration {
     }
 
     @Autowired
-    private AwsCognitoJtwConfiguration awsCognitoJtwConfiguration;
+    private AwsCognitoJwtConfiguration awsCognitoJtwConfiguration;
 
     @Bean
     public ConfigurableJWTProcessor cognitoJwtProcessor() throws MalformedURLException {
-    	logger.debug("Configuring "+AwsCognitoJtwConfiguration.class.getName()+" as ConfigurableJWTProcessor");
+    	logger.debug("Configuring "+AwsCognitoJwtConfiguration.class.getName()+" as ConfigurableJWTProcessor");
         ResourceRetriever resourceRetriever = new DefaultResourceRetriever(awsCognitoJtwConfiguration.getConnectionTimeout(), awsCognitoJtwConfiguration.getReadTimeout());
         URL jwkSetURL = new URL(awsCognitoJtwConfiguration.getJwkUrl());
         JWKSource keySource = new RemoteJWKSet(jwkSetURL, resourceRetriever);
@@ -89,4 +90,9 @@ public class AwsCognitoAutoConfiguration {
         return jwtProcessor;
     }
 
+    @Bean
+    @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public JwtIdTokenCredentialsHolder jwtidTokenCredentialsholder() {
+    	return new JwtIdTokenCredentialsHolder();
+    }
 }

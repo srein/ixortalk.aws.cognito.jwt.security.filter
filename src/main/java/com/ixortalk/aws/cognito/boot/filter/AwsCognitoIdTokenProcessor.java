@@ -25,7 +25,7 @@ package com.ixortalk.aws.cognito.boot.filter;
 
 import com.ixortalk.aws.cognito.boot.JwtAuthentication;
 import com.ixortalk.aws.cognito.boot.config.JwtIdTokenCredentialsHolder;
-import com.ixortalk.aws.cognito.boot.config.JwtConfiguration;
+import com.ixortalk.aws.cognito.boot.config.AwsCognitoJwtConfiguration;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import org.apache.commons.logging.Log;
@@ -52,10 +52,9 @@ public class AwsCognitoIdTokenProcessor {
     private static final String EMPTY_PWD = "";
 
     @Autowired
-    private JwtConfiguration jwtConfiguration;
+    private AwsCognitoJwtConfiguration jwtConfiguration;
 
     @Autowired
-    @Qualifier("cognitoJwtProcessor")
     private ConfigurableJWTProcessor cognitoJWTProcessor;
 
     @Autowired
@@ -63,18 +62,25 @@ public class AwsCognitoIdTokenProcessor {
 
     public Authentication getAuthentication(HttpServletRequest request) throws Exception {
 
-    	final String bearerMarker = jwtConfiguration.getAuthorizationIdentifier().toUpperCase();
+    	final String bearerMarker = jwtConfiguration.getAuthorizationIdentifier().toUpperCase().trim();
         final String authHeader = request.getHeader(jwtConfiguration.getHttpHeader());
         if (authHeader != null) {
 
         	logger.trace("Content of "+jwtConfiguration.getHttpHeader()+" header: "+authHeader);
         	        	
-            if(!authHeader.toUpperCase().startsWith(bearerMarker)) {
-            	logger.debug("No bearer token present in "+jwtConfiguration.getHttpHeader()+" header");
-            	return null;
-            }
+        	final String idToken;
+        	if(!bearerMarker.isEmpty()) {
+            	logger.trace("Looking for "+bearerMarker+" in "+jwtConfiguration.getHttpHeader()+" header");
+                if(!authHeader.toUpperCase().startsWith(bearerMarker+" ")) {
+                	logger.debug("No bearer token present in "+jwtConfiguration.getHttpHeader()+" header");
+                	return null;
+                }
 
-        	final String idToken = authHeader.substring(bearerMarker.length()).trim();
+            	idToken = authHeader.substring(bearerMarker.length()+1).trim();        		
+        	} else {
+            	logger.trace("Assuming the entire "+jwtConfiguration.getHttpHeader()+" header is the token");
+        		idToken = authHeader;
+        	}
 
         	JWTClaimsSet claimsSet = null;
 
