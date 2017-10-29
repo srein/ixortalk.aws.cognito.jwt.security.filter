@@ -43,6 +43,7 @@ public class JwtConfiguration {
     private int connectionTimeout = 2000;
     private int readTimeout = 2000;
     private String httpHeader = "Authorization";
+    private String authorizationIdentifier = "Bearer";
 
     public String getJwkUrl() {
         if (jwkUrl==null || jwkUrl.isEmpty()) {
@@ -82,6 +83,14 @@ public class JwtConfiguration {
 
     public void setHttpHeader(String httpHeader) {
         this.httpHeader = httpHeader;
+    }
+
+    public String getAuthorizationIdentifier() {
+        return authorizationIdentifier;
+    }
+
+    public void setAuthorizationIdentifier(String authorizationIdentifier) {
+        this.authorizationIdentifier = authorizationIdentifier;
     }
 
     public String getUserNameField() {

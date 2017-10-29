@@ -33,6 +33,9 @@ import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -50,6 +53,8 @@ import static com.nimbusds.jose.JWSAlgorithm.RS256;
 @ConditionalOnClass({AwsCognitoJwtAuthenticationFilter.class, AwsCognitoIdTokenProcessor.class})
 @EnableConfigurationProperties({AwsCognitoJtwConfiguration.class})
 public class AwsCognitoAutoConfiguration {
+
+    private static final Log logger = LogFactory.getLog(AwsCognitoAutoConfiguration.class);
 
     @Bean
     @Scope(value="request", proxyMode= ScopedProxyMode.TARGET_CLASS)
@@ -73,7 +78,8 @@ public class AwsCognitoAutoConfiguration {
     private AwsCognitoJtwConfiguration awsCognitoJtwConfiguration;
 
     @Bean
-    public ConfigurableJWTProcessor jwtProcessor() throws MalformedURLException {
+    public ConfigurableJWTProcessor cognitoJwtProcessor() throws MalformedURLException {
+    	logger.debug("Configuring "+AwsCognitoJtwConfiguration.class.getName()+" as ConfigurableJWTProcessor");
         ResourceRetriever resourceRetriever = new DefaultResourceRetriever(awsCognitoJtwConfiguration.getConnectionTimeout(), awsCognitoJtwConfiguration.getReadTimeout());
         URL jwkSetURL = new URL(awsCognitoJtwConfiguration.getJwkUrl());
         JWKSource keySource = new RemoteJWKSet(jwkSetURL, resourceRetriever);

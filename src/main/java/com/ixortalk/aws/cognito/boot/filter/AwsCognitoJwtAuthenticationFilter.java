@@ -58,10 +58,9 @@ public class AwsCognitoJwtAuthenticationFilter extends GenericFilterBean {
             }
 
         } catch (Exception e) {
-            logger.error("Error occured while processing Cognito ID Token",e);
+            logger.error("Error occured while processing Cognito ID Token: "+e.getMessage());
+            logger.debug("Error occured while processing Cognito ID Token: "+e);
             SecurityContextHolder.clearContext();
-            //return;
-            //throw new ServletException("Error occured while processing Cognito ID Token",e);
         }
 
         filterChain.doFilter(request,response);

@@ -31,12 +31,15 @@ import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
 import javax.servlet.http.HttpServletRequest;
+
+import java.text.ParseException;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -52,19 +55,30 @@ public class AwsCognitoIdTokenProcessor {
     private JwtConfiguration jwtConfiguration;
 
     @Autowired
-    private ConfigurableJWTProcessor configurableJWTProcessor;
+    @Qualifier("cognitoJwtProcessor")
+    private ConfigurableJWTProcessor cognitoJWTProcessor;
 
     @Autowired
     private JwtIdTokenCredentialsHolder jwtIdTokenCredentialsHolder;
 
     public Authentication getAuthentication(HttpServletRequest request) throws Exception {
 
-        String idToken = request.getHeader(jwtConfiguration.getHttpHeader());
-        if (idToken != null) {
+    	final String bearerMarker = jwtConfiguration.getAuthorizationIdentifier().toUpperCase();
+        final String authHeader = request.getHeader(jwtConfiguration.getHttpHeader());
+        if (authHeader != null) {
 
-            JWTClaimsSet claimsSet = null;
+        	logger.trace("Content of "+jwtConfiguration.getHttpHeader()+" header: "+authHeader);
+        	        	
+            if(!authHeader.toUpperCase().startsWith(bearerMarker)) {
+            	logger.debug("No bearer token present in "+jwtConfiguration.getHttpHeader()+" header");
+            	return null;
+            }
 
-            claimsSet = configurableJWTProcessor.process(idToken, null);
+        	final String idToken = authHeader.substring(bearerMarker.length()).trim();
+
+        	JWTClaimsSet claimsSet = null;
+
+            claimsSet = cognitoJWTProcessor.process(idToken, null);            	
 
             if (!isIssuedCorrectly(claimsSet)) {
                 throw new Exception(String.format("Issuer %s in JWT token doesn't match cognito idp %s", claimsSet.getIssuer(), jwtConfiguration.getCognitoIdentityPoolUrl()));
